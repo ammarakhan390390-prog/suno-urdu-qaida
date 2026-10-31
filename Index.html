@@ -1,0 +1,342 @@
+
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+  <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#ff9800">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>میری پیاری تعلیمی ایپ</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;
+ background:linear-gradient(135deg,#fff1f2,#e0f2fe);
+ color:#243047;text-align:center
+}
+header{
+ background:#7c3aed;color:white;padding:20px 10px;
+ border-radius:0 0 25px 25px
+}
+h1{margin:5px;font-size:27px}
+.subtitle{font-size:14px}
+.container{padding:15px;max-width:750px;margin:auto}
+.menu{
+ display:grid;grid-template-columns:1fr 1fr;gap:12px
+}
+.card{
+ border:0;border-radius:18px;padding:20px 8px;
+ font-size:18px;font-weight:bold;color:#263238;
+ background:white;box-shadow:0 3px 10px #0002;
+ cursor:pointer
+}
+.card span{display:block;font-size:35px;margin-bottom:8px}
+button{cursor:pointer}
+.section{display:none}
+.section.active{display:block}
+.back,.action{
+ border:0;border-radius:12px;padding:12px 18px;
+ margin:7px;background:#7c3aed;color:white;font-size:16px
+}
+.grid{
+ display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+ margin-top:15px
+}
+.item{
+ background:white;border-radius:15px;padding:15px 5px;
+ box-shadow:0 2px 7px #0002;font-size:19px
+}
+.big{font-size:35px;display:block;margin-bottom:6px}
+.small{font-size:14px;color:#555}
+#board{
+ background:white;border:3px solid #7c3aed;
+ border-radius:15px;width:100%;height:300px;
+ touch-action:none;display:block
+}
+#word{
+ width:95%;padding:14px;border:2px solid #7c3aed;
+ border-radius:12px;font-size:22px;margin:12px 0;
+ text-align:center
+}
+.poem{
+ background:white;border-radius:15px;padding:15px;
+ margin:12px 0;line-height:2;font-size:20px
+}
+</style>
+</head>
+  <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js");
+  });
+}
+  </script>
+<body>
+
+<header>
+ <h1>🌈 میری پیاری تعلیمی ایپ 🌈</h1>
+ <div class="subtitle">کھیل کھیل میں سیکھیں اور آگے بڑھیں</div>
+</header>
+
+<div class="container">
+
+<!-- HOME -->
+<div id="home" class="section active">
+ <h2>اپنی پسند کا سبق منتخب کریں</h2>
+ <div class="menu">
+  <button class="card" onclick="show('urdu')">
+   <span>🔤</span>اردو حروف
+  </button>
+  <button class="card" onclick="show('english')">
+   <span>🍎</span>English Alphabet
+  </button>
+  <button class="card" onclick="show('count')">
+   <span>🔢</span>اردو گنتی
+  </button>
+  <button class="card" onclick="show('board')">
+   <span>✍️</span>لکھنے کا بورڈ
+  </button>
+  <button class="card" onclick="show('poems')">
+   <span>🎵</span>پیاری نظمیں
+  </button>
+  <button class="card" onclick="show('words')">
+   <span>🗣️</span>لفظ بنائیں اور سنیں
+  </button>
+ </div>
+</div>
+
+<!-- URDU -->
+<div id="urdu" class="section">
+ <h2>اردو حروف تہجی</h2>
+ <button class="back" onclick="show('home')">⬅ واپس</button>
+ <div id="urduGrid" class="grid"></div>
+</div>
+
+<!-- ENGLISH -->
+<div id="english" class="section">
+ <h2>English Alphabet</h2>
+ <button class="back" onclick="show('home')">⬅ واپس</button>
+ <div id="englishGrid" class="grid"></div>
+</div>
+
+<!-- COUNTING -->
+<div id="count" class="section">
+ <h2>اردو گنتی: صفر سے پچاس</h2>
+ <button class="back" onclick="show('home')">⬅ واپس</button>
+ <div id="countGrid" class="grid"></div>
+</div>
+
+<!-- WRITING BOARD -->
+<div id="board" class="section">
+ <h2>✍️ انگلی سے لکھیں</h2>
+ <button class="back" onclick="show('home')">⬅ واپس</button>
+ <canvas id="canvas"></canvas>
+ <button class="action" onclick="clearBoard()">مٹائیں</button>
+ <button class="action" onclick="clearBoard()">دوبارہ لکھیں</button>
+ <p>اپنی انگلی سے سفید بورڈ پر لکھیں۔</p>
+</div>
+
+<!-- WORDS -->
+<div id="words" class="section">
+ <h2>لفظ بنائیں اور سنیں</h2>
+ <button class="back" onclick="show('home')">⬅ واپس</button>
+ <p>نیچے لفظ لکھیں یا حروف منتخب کرکے لفظ بنائیں۔</p>
+ <input id="word" placeholder="یہاں لفظ لکھیں">
+ <button class="action" onclick="speakWord()">لفظ سنیں 🔊</button>
+ <div id="letters" class="grid"></div>
+ <button class="action" onclick="document.getElementById('word').value=''">
+ صاف کریں
+ </button>
+</div>
+
+<!-- POEMS -->
+<div id="poems" class="section">
+ <h2>🎵 پیاری نظمیں</h2>
+ <button class="back" onclick="show('home')">⬅ واپس</button>
+
+ <div class="poem">
+  <div class="big">🌞</div>
+  سورج نکلا روشنی لایا<br>
+  سب بچوں کو اس نے جگایا<br>
+  پڑھنا لکھنا خوب سیکھیں<br>
+  مل کر آگے بڑھتے جائیں
+  <br><button class="action" onclick="speakText(this)">سنیں 🔊</button>
+ </div>
+
+ <div class="poem">
+  <div class="big">🌸</div>
+  پھول کھلے ہیں پیارے پیارے<br>
+  رنگ ہیں ان کے کتنے سارے<br>
+  خوشبو ان کی دل کو بھائے<br>
+  ہر بچہ مسکرائے
+  <br><button class="action" onclick="speakText(this)">سنیں 🔊</button>
+ </div>
+
+ <div class="poem">
+  <div class="big">📚</div>
+  کتاب ہماری اچھی ساتھی<br>
+  علم کی یہ ہے پیاری باتی<br>
+  روز پڑھیں اور علم بڑھائیں<br>
+  اچھے بچے کہلائیں
+  <br><button class="action" onclick="speakText(this)">سنیں 🔊</button>
+ </div>
+</div>
+
+</div>
+
+<script>
+function show(id){
+ document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ if(id==='board') resizeCanvas();
+}
+
+function speak(text,lang){
+ if(!('speechSynthesis' in window)){
+  alert('اس براؤزر میں آواز کی سہولت دستیاب نہیں۔');
+  return;
+ }
+ speechSynthesis.cancel();
+ let msg=new SpeechSynthesisUtterance(text);
+ msg.lang=lang;
+ msg.rate=0.8;
+ speechSynthesis.speak(msg);
+}
+
+function speakWord(){
+ let word=document.getElementById('word').value.trim();
+ if(word) speak(word,'ur-PK');
+ else alert('پہلے کوئی لفظ لکھیں۔');
+}
+
+function speakText(button){
+ let poem=button.parentElement.innerText.replace('سنیں 🔊','');
+ speak(poem,'ur-PK');
+}
+
+// Urdu alphabet
+const urdu=[
+ ['ا','انار','🍎'],['ب','بکری','🐐'],['پ','پتنگ','🪁'],
+ ['ت','تتلی','🦋'],['ٹ','ٹماٹر','🍅'],['ث','ثواب','⭐'],
+ ['ج','جہاز','✈️'],['چ','چاند','🌙'],['ح','حلوہ','🍮'],
+ ['خ','خرگوش','🐇'],['د','درخت','🌳'],['ڈ','ڈبہ','📦'],
+ ['ذ','ذہین','🧠'],['ر','رسی','🪢'],['ڑ','گاڑی','🚗'],
+ ['ز','زرافہ','🦒'],['ژ','ژالہ','❄️'],['س','سیب','🍎'],
+ ['ش','شیر','🦁'],['ص','صبح','🌅'],['ض','ضرب','➗'],
+ ['ط','طوطا','🦜'],['ظ','ظرف','🏺'],['ع','عینک','👓'],
+ ['غ','غبارہ','🎈'],['ف','فوارہ','⛲'],['ق','قلم','✏️'],
+ ['ک','کتاب','📚'],['گ','گلاب','🌹'],['ل','لیموں','🍋'],
+ ['م','مچھلی','🐟'],['ن','نل','🚰'],['و','وعدہ','🤝'],
+ ['ہ','ہاتھی','🐘'],['ء','آواز','🔊'],['ی','یاد','💭'],
+ ['ے','بڑے','👨‍👩‍👧']
+];
+
+const ug=document.getElementById('urduGrid');
+urdu.forEach(x=>{
+ let d=document.createElement('div');
+ d.className='item';
+ d.innerHTML=`<span class="big">${x[2]}</span><b>${x[0]}</b><br>${x[1]}`;
+ d.onclick=()=>speak(x[0]+'، '+x[1],'ur-PK');
+ ug.appendChild(d);
+});
+
+// English alphabet
+const english=[
+ ['A','Apple','🍎'],['B','Ball','⚽'],['C','Cat','🐱'],
+ ['D','Dog','🐶'],['E','Elephant','🐘'],['F','Fish','🐟'],
+ ['G','Grapes','🍇'],['H','Hen','🐔'],['I','Ice cream','🍦'],
+ ['J','Jug','🏺'],['K','Kite','🪁'],['L','Lion','🦁'],
+ ['M','Monkey','🐒'],['N','Nest','🪺'],['O','Orange','🍊'],
+ ['P','Parrot','🦜'],['Q','Queen','👑'],['R','Rabbit','🐇'],
+ ['S','Sun','☀️'],['T','Tiger','🐯'],['U','Umbrella','☂️'],
+ ['V','Van','🚐'],['W','Watch','⌚'],['X','Xylophone','🎼'],
+ ['Y','Yo-yo','🪀'],['Z','Zebra','🦓']
+];
+
+const eg=document.getElementById('englishGrid');
+english.forEach(x=>{
+ let d=document.createElement('div');
+ d.className='item';
+ d.innerHTML=`<span class="big">${x[2]}</span><b>${x[0]}</b><br>${x[1]}`;
+ d.onclick=()=>speak(x[0]+' for '+x[1],'en-US');
+ eg.appendChild(d);
+});
+
+// Urdu counting 0-50
+const names=[
+ 'صفر','ایک','دو','تین','چار','پانچ','چھ','سات','آٹھ','نو',
+ 'دس','گیارہ','بارہ','تیرہ','چودہ','پندرہ','سولہ','سترہ','اٹھارہ','انیس',
+ 'بیس','اکیس','بائیس','تئیس','چوبیس','پچیس','چھبیس','ستائیس','اٹھائیس','انتیس',
+ 'تیس','اکتیس','بتیس','تینتیس','چونتیس','پینتیس','چھتیس','سینتیس','اڑتیس','انتالیس',
+ 'چالیس','اکتالیس','بیالیس','تینتالیس','چوالیس','پینتالیس','چھیالیس','سینتالیس','اڑتالیس','انچاس','پچاس'
+];
+const cg=document.getElementById('countGrid');
+for(let i=0;i<=50;i++){
+ let d=document.createElement('div');
+ d.className='item';
+ d.innerHTML=`<span class="big">${i}</span>${names[i]}`;
+ d.onclick=()=>speak(names[i],'ur-PK');
+ cg.appendChild(d);
+}
+
+// Letter buttons for making words
+const letters=document.getElementById('letters');
+urdu.forEach(x=>{
+ let b=document.createElement('button');
+ b.className='action';
+ b.textContent=x[0];
+ b.onclick=()=>{
+  document.getElementById('word').value+=x[0];
+ };
+ letters.appendChild(b);
+});
+
+// Finger drawing board
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+let drawing=false;
+
+function resizeCanvas(){
+ let rect=canvas.getBoundingClientRect();
+ canvas.width=rect.width*devicePixelRatio;
+ canvas.height=300*devicePixelRatio;
+ ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+ ctx.lineWidth=5;
+ ctx.lineCap='round';
+ ctx.strokeStyle='#222';
+}
+
+function position(e){
+ let r=canvas.getBoundingClientRect();
+ return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+canvas.addEventListener('pointerdown',e=>{
+ drawing=true;
+ canvas.setPointerCapture(e.pointerId);
+ let p=position(e);
+ ctx.beginPath();
+ ctx.moveTo(p.x,p.y);
+});
+
+canvas.addEventListener('pointermove',e=>{
+ if(!drawing)return;
+ let p=position(e);
+ ctx.lineTo(p.x,p.y);
+ ctx.stroke();
+});
+
+function stopDrawing(){
+ drawing=false;
+ ctx.beginPath();
+}
+canvas.addEventListener('pointerup',stopDrawing);
+canvas.addEventListener('pointercancel',stopDrawing);
+
+function clearBoard(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+</script>
+</body>
+</html>
